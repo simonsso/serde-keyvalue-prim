@@ -3,21 +3,27 @@
 // found in the LICENSE file.
 
 //! A lightweight serde deserializer for strings containing key-value pairs separated by commas, as
-//! commonly found in command-line parameters.
+//! commonly found in command-line parameters  or colon and semicolons as in simple line-based communication protocols.
+//! 
+//! This project was forked from https://crates.io/crates/serde-keyvalue source:
+//! https://gitlab.com/BrightOpen/serde-keyvalue and modified to support multiple delimiters.
 //!
 //! Say your program takes a command-line option of the form:
 //!
 //! ```text
 //! --foo type=bar,active,nb_threads=8
 //! ```
+//! 
+//! or you need to parse a configuration string like:
+//! 
+//! ```text
+//! type:bar;active:99;nb_threads=8
+//! ```
 //!
 //! This crate provides a [from_key_values] function that deserializes these key-values into a
 //! configuration structure. Since it uses serde, the same configuration structure can also be
 //! created from any other supported source (such as a TOML or YAML configuration file) that uses
 //! the same keys.
-//!
-//! Integration with the [argh](https://github.com/google/argh) command-line parser is also
-//! provided via the `argh_derive` feature.
 //!
 //! The deserializer supports parsing signed and unsigned integers, booleans, strings (quoted or
 //! not), paths, and enums inside a top-level struct. The order in which the fields appear in the
