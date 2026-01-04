@@ -26,7 +26,7 @@
 //! Simple example:
 //!
 //! ```
-//! use serde_keyvalue::from_key_values;
+//! use serde_keyvalue_prim::from_key_values;
 //! use serde::Deserialize;
 //!
 //! #[derive(Debug, PartialEq, Deserialize)]
@@ -46,7 +46,7 @@
 //! As a convenience the name of the first field of a struct can be omitted:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct Config {
@@ -62,7 +62,7 @@
 //! Fields that are behind an `Option` can be omitted, in which case they will be `None`.
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct Config {
@@ -83,7 +83,7 @@
 //! the `path` parameter must be specified.
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct Config {
@@ -105,7 +105,7 @@
 //! Combined with default values this allows to implement flags very easily:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, Default, PartialEq, Deserialize)]
 //! #[serde(default)]
@@ -127,7 +127,7 @@
 //! where any character after a `\` is repeated as-is:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct Config {
@@ -141,7 +141,7 @@
 //! Tuples and vectors are allowed and must be specified between `[` and `]`:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct Layout {
@@ -149,7 +149,7 @@
 //!     scanlines: Vec<u16>,
 //! }
 //!
-//! let layout: Layout = from_key_values("resolution=[320,200],scanlines=[0,64,128]").unwrap();
+//! let layout: Layout = from_key_values("resolution:[320;200];scanlines:[0;64;128]").unwrap();
 //! assert_eq!(layout, Layout { resolution: (320, 200), scanlines: vec![0, 64, 128] });
 //! ```
 //!
@@ -158,7 +158,7 @@
 //! `rename` and `alias` field attributes can also be used to provide shorter values:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! #[serde(rename_all="kebab-case")]
@@ -185,7 +185,7 @@
 //!
 //! ```
 //! # use std::collections::BTreeSet;
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Deserialize, PartialEq, Eq, Debug, PartialOrd, Ord)]
 //! #[serde(rename_all = "kebab-case")]
@@ -212,7 +212,7 @@
 //! their variant key directly:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! #[serde(rename_all="kebab-case")]
@@ -240,7 +240,7 @@
 //! from the same string:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct BaseConfig {
@@ -272,7 +272,7 @@
 //! inferred directly from the fields of the embedded structs:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! #[serde(untagged)]
@@ -306,7 +306,7 @@
 //! Using this crate, parsing errors and invalid or missing fields are precisely reported:
 //!
 //! ```
-//! # use serde_keyvalue::from_key_values;
+//! # use serde_keyvalue_prim::from_key_values;
 //! # use serde::Deserialize;
 //! #[derive(Debug, PartialEq, Deserialize)]
 //! struct Config {
@@ -346,11 +346,7 @@
 
 mod key_values;
 
-#[cfg(feature = "argh_derive")]
-pub use argh;
 pub use key_values::from_key_values;
 pub use key_values::ErrorKind;
 pub use key_values::KeyValueDeserializer;
 pub use key_values::ParseError;
-#[cfg(feature = "argh_derive")]
-pub use serde_keyvalue_derive::FromKeyValues;

@@ -50,9 +50,9 @@ pub enum ErrorKind {
     ExpectedBoolean,
     #[error("expected ']'")]
     ExpectedCloseBracket,
-    #[error("expected ','")]
+    #[error("expected ',' or ';'")]
     ExpectedComma,
-    #[error("expected '='")]
+    #[error("expected '=' or ':'")]
     ExpectedEqual,
     #[error("expected an identifier")]
     ExpectedIdentifier,
@@ -104,7 +104,7 @@ type Result<T> = std::result::Result<T, ParseError>;
 
 /// Returns `true` if `c` is a valid separator character.
 fn is_separator(c: Option<char>) -> bool {
-    matches!(c, Some(',') | Some(']') | None)
+    matches!(c, Some(',') | Some(';') | Some(']') | None)
 }
 
 /// Nom parser for valid separators.
@@ -159,10 +159,10 @@ fn any_string(s: &str) -> IResult<&str, Cow<str>> {
         Cow::Borrowed,
     );
 
-    // Unquoted strings end with the next comma or bracket and may not contain a quote or bracket
-    // character or be empty.
+    // Unquoted strings end with the next comma/semicolon or bracket and may not contain a
+    // quote or bracket character or be empty.
     let unquoted = map(
-        take_while1(|c: char| c != ',' && c != '"' && c != '\'' && c != '[' && c != ']'),
+        take_while1(|c: char| c != ',' && c != ';' && c != '"' && c != '\'' && c != '[' && c != ']'),
         Cow::Borrowed,
     );
 
@@ -310,9 +310,9 @@ impl<'de> KeyValueDeserializer<'de> {
     /// Confirm that we have a separator (i.e. ',' or ']') character or have reached the end of the
     /// input string.
     fn confirm_separator(&mut self) -> Result<()> {
-        // We must have a comma or end of input after a value.
+        // We must have a separator (',' or ';') or end of input after a value.
         match self.peek_char() {
-            Some(',') => {
+            Some(',') | Some(';') => {
                 let _ = self.next_char();
                 Ok(())
             }
@@ -418,8 +418,8 @@ impl<'de> de::MapAccess<'de> for KeyValueDeserializer<'de> {
         }
 
         match self.peek_char() {
-            // We expect an equal after an identifier.
-            Some('=') => {
+            // We expect an equal sign (':' or '=') after an identifier.
+            Some(':') | Some('=') => {
                 self.skip_char();
                 self.has_equal = true;
                 Ok(val)
@@ -448,7 +448,7 @@ impl<'de> de::MapAccess<'de> for KeyValueDeserializer<'de> {
 /// all its members will take their default value:
 ///
 /// ```
-/// # use serde_keyvalue::from_key_values;
+/// # use serde_keyvalue_prim::from_key_values;
 /// # use serde::Deserialize;
 /// #[derive(Deserialize, PartialEq, Eq, Debug)]
 /// #[serde(rename_all = "kebab-case")]
@@ -845,7 +845,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut KeyValueDeserializer<'de> {
         // one of the field's name - in this case, assume this is a boolean using the flag syntax.
         self.next_identifier = match any_identifier(self.input) {
             Ok((_, s)) => match self.input.chars().nth(s.chars().count()) {
-                Some('=') => None,
+                Some(':') | Some('=') => None,
                 _ => {
                     if fields.contains(&s) {
                         None
@@ -1516,13 +1516,42 @@ mod tests {
     }
 
     #[test]
+    fn deserialize_colon_untagged_enum() {
+        #[derive(Deserialize, PartialEq, Debug)]
+        #[serde(untagged)]
+        enum TestEnum {
+            FirstVariant { first: u32 },
+            SecondVariant { second: bool },
+        }
+
+        #[derive(Deserialize, PartialEq, Debug)]
+        struct TestStruct {
+            #[serde(flatten)]
+            variant: TestEnum,
+        }
+
+        let res: TestStruct = from_key_values("first:10").unwrap();
+        assert_eq!(res.variant, TestEnum::FirstVariant { first: 10 });
+
+        let res: TestStruct = from_key_values("second:false").unwrap();
+        assert_eq!(res.variant, TestEnum::SecondVariant { second: false },);
+
+        let res: TestStruct = from_key_values("second").unwrap();
+        assert_eq!(res.variant, TestEnum::SecondVariant { second: true },);
+
+        from_key_values::<TestStruct>("third:10").unwrap_err();
+        from_key_values::<TestStruct>("first:some_string").unwrap_err();
+        from_key_values::<TestStruct>("second:10").unwrap_err();
+    }
+
+    #[test]
     fn deserialize_first_arg_string() {
         #[derive(Deserialize, PartialEq, Debug)]
         struct TestStruct {
             name: String,
             num: u8,
         }
-        let res: TestStruct = from_key_values("name=foo,num=12").unwrap();
+        let res: TestStruct = from_key_values("name:foo;num:12").unwrap();
         assert_eq!(
             res,
             TestStruct {

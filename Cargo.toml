@@ -1,11 +1,11 @@
 [package]
-name = "serde-keyvalue"
+name = "serde-keyvalue-prim"
 version = "0.1.0"
 edition = "2021"
 license = "BSD-3-Clause"
-description = "Deserialize key=value parameters with serde"
-documentation = "https://docs.rs/serde-keyvalue"
-homepage = "https://gitlab.com/BrightOpen/serde-keyvalue"
+description = "Deserialize key=value parameters with serde, supporting multiple delimiters, both key=value and key:value separated by either , or ;."
+# documentation = "https://docs.rs/serde-keyvalue"
+# forked from homepage = "https://gitlab.com/BrightOpen/serde-keyvalue"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
