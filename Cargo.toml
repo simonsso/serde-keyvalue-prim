@@ -1,6 +1,6 @@
 [package]
 name = "serde-keyvalue-prim"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "BSD-3-Clause"
 description = "Deserialize key=value parameters with serde, supporting multiple delimiters, both key=value and key:value separated by either , or ;."
